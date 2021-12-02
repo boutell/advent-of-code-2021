@@ -1,7 +1,15 @@
 import { readFileSync as read } from 'fs';
 
+enum Direction {
+  forward = 'forward',
+  up = 'up',
+  down = 'down'
+}
+
+const directionNames:Array<string> = Object.values(Direction);
+
 interface Command {
-  direction: string,
+  direction: Direction,
   distance: number
 };
 
@@ -10,25 +18,34 @@ const input:Array<Command> = read('day-2.txt', { encoding: 'utf8' })
   .map(line => line.trim())
   .filter(line => line.length > 0)
   .map(line => {
-    const components:Array<string> = line.split(' ');
+    const [ directionName, distance ] = line.split(' ');
+    if (!directionNames.includes(directionName)) {
+      throw new Error(`Invalid direction: ${directionName}`);
+    }
     const command: Command = {
-      direction: components[0],
-      distance: +components[1]
+      direction: directionName as Direction,
+      distance: +distance
     };
     return command;
   });
 
 let position = 0, depth = 0, aim = 0;
 
+const actions = {
+  [Direction.forward]: (value:number) => {
+    position += value;
+    depth += value * aim;
+  },
+  [Direction.up]: (value:number) => {
+    aim -= value;
+  },
+  [Direction.down]: (value:number) => {
+    aim += value;
+  },
+};
+
 for (const command of input) {
-  if (command.direction === 'forward') {
-    position += command.distance;
-    depth += command.distance * aim;
-  } else if (command.direction === 'down') {
-    aim += command.distance;
-  } else if (command.direction === 'up') {
-    aim -= command.distance;
-  }
+  actions[command.direction](command.distance);
 }
 
 console.log(position * depth);
