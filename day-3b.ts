@@ -27,7 +27,9 @@ const co2ScrubberRating = reduce(input, 0, (counts:Array<number>) => {
 
 console.log(parseInt(oxygenGeneratorRating, 2) * parseInt(co2ScrubberRating, 2));
 
-function reduce(input:Array<string>, place:number, comparator:Function):string {
+type Comparator = (counts:Array<number>) => number;
+
+function reduce(input:Array<string>, place:number, comparator:Comparator):string {
   const counts = [ 0, 0 ];
   if (input.length === 1) {
     return input[0];
