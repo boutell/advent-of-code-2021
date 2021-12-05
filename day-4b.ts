@@ -75,7 +75,7 @@ function splitNumbers(input:Array<string>):Array<number> {
 
 function splitBoards(input:Array<string>):Array<Board> {
   const boards = new Array<Board>();
-  let board:Array<Array<number>> = createBoard();
+  let board:Board = createBoard();
   for (let row = 1; (row < input.length); row++) {
     if (input[row] === '') {
       flushBoard();
