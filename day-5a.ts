@@ -69,11 +69,3 @@ function scaley(y:number):number {
 function scalex(x:number):number {
   return Math.floor(x) - Math.floor(minx);
 }
-
-function sign(n:number):number {
-  if (n < 0) {
-    return -1;
-  } else {
-    return 1;
-  }
-}

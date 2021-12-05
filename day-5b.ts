@@ -88,11 +88,3 @@ function scaley(y:number):number {
 function scalex(x:number):number {
   return Math.round(x) - minx;
 }
-
-function sign(n:number):number {
-  if (n < 0) {
-    return -1;
-  } else {
-    return 1;
-  }
-}
