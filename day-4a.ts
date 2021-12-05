@@ -83,8 +83,7 @@ function splitBoards(input:Array<string>):Array<Board> {
   }
   flushBoard();
   function createBoard():Board {
-    // How can I just instantiate a Board? "new Board()" throws an error
-    return new Array<Array<number>>();
+    return [];
   }
   function flushBoard() {
     if (board.length) {
