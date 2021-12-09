@@ -13,7 +13,6 @@ const input = read('day-8.txt', { encoding: 'utf8' })
 
 console.log(JSON.stringify(input, null, '  '));
 
-const digits = [ 6, 2, 5, 5, 4, 5, 6, 3, 7, 6];
 const simple = {
   1: 2,
   4: 4,
