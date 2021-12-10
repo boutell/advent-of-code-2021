@@ -21,11 +21,16 @@ comparePeers((x, y, value, peers) => {
   }
 });
 
+printBasins();
+
 let changed = false;
 do {
   changed = false;
   comparePeers((x, y, value, peers) => {
     if (value.basin) {
+      return;
+    }
+    if (value.height === 9) {
       return;
     }
     const basinPeer = peers.find(peer => peer.basin && (peer.height <= value.height));
@@ -34,10 +39,11 @@ do {
       changed = true;
     }
   });
+  printBasins();
 } while (changed);
 
 let basinSizes:Array<number> = [];
-for (let i = 0; (i < next); i++) {
+for (let i = 1; (i < next); i++) {
   basinSizes[i] = 0;
 }   
 for (let y = 0; (y < map.length); y++) {
@@ -47,7 +53,10 @@ for (let y = 0; (y < map.length); y++) {
   }
 }
 
-console.log(basinSizes.reduce((a, v) => a * v || v, 0));
+basinSizes = basinSizes.slice(1);
+basinSizes.sort((a, b) => b - a);
+console.log(basinSizes);
+console.log(basinSizes[0] * basinSizes[1] * basinSizes[2]);
 
 function comparePeers(fn:(x:number, y:number, value:Cell, peers:Array<Cell>) => void) {
   for (let y = 0; (y < map.length); y++) {
@@ -68,4 +77,9 @@ function comparePeers(fn:(x:number, y:number, value:Cell, peers:Array<Cell>) => 
       fn(x, y, map[y][x], peers);
     } 
   }
+}
+
+function printBasins() {
+  console.log(map.map(row => row.map(cell => cell.basin).join('')).join('\n'));
+  console.log('\n\n');
 }
