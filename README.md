@@ -13,6 +13,8 @@ I did this to get set up:
 npm install -g typescript
 # Typescript command line environment
 npm install -g ts-node
+# Typescript types for node
+npm install -g @types/node
 ```
 
 Now I can run `ts-node day-1a.ts` to run that solution. In addition I added an alias in my `.bash_profile`:

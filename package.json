@@ -1,0 +1,24 @@
+{
+  "name": "advent-of-code-2021",
+  "version": "1.0.0",
+  "description": "Advent of Code 2021 in TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boutell/advent-of-code-2021.git"
+  },
+  "author": "Thomas Boutell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/boutell/advent-of-code-2021/issues"
+  },
+  "homepage": "https://github.com/boutell/advent-of-code-2021#readme",
+  "devDependencies": {
+    "@types/node": "^16.11.12",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.3"
+  }
+}

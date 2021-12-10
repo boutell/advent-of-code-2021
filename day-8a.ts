@@ -11,8 +11,6 @@ const input = read('day-8.txt', { encoding: 'utf8' })
     }
   });
 
-console.log(JSON.stringify(input, null, '  '));
-
 const simple = {
   1: 2,
   4: 4,
@@ -25,10 +23,8 @@ for (const display of input) {
   for (const value of display.output) {
     if (Object.values(simple).includes(value.length)) {
       sum++;
-      console.log(value);
     }
   }
-  // sum += display.output.reduce((a, v) => a + (Object.values(simple).includes(v.length) ? 1 : 0), 0);
 }
 console.log(sum);
 
