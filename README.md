@@ -6,23 +6,15 @@ If you're not familiar, [Advent of Code](https://adventofcode.com) is an enjoyab
 
 ## How to run these
 
-I did this to get set up:
-
 ```
-# Typescript compiler
-npm install -g typescript
-# Typescript command line environment
-npm install -g ts-node
-# Typescript types for node
-npm install -g @types/node
+npm install
+npx ts-node day-1a.ts
 ```
 
-Now I can run `ts-node day-1a.ts` to run that solution. In addition I added an alias in my `.bash_profile`:
+I also have an alias in my `~/.bash_profile`:
 
 ```
-alias ts=ts-node
+alias ts="npx ts-node"
 ```
 
 ... So I can type `ts day-1a.ts`.
-
-But I should really set up a `package.json` here so you can `npm install` and run these with `npx` and all that jazz so I'm not dependent on a globally installed version of typescript. I can still have my alias, after all.
