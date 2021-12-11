@@ -4,7 +4,8 @@
   "description": "Advent of Code 2021 in TypeScript",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc day-10b-visualization.ts" 
   },
   "repository": {
     "type": "git",

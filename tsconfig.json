@@ -1,9 +1,0 @@
-{
-  "strict": true,
-  "compilerOptions": {
-    "lib": [
-      "es2019"
-    ]
-  }
-}
-
