@@ -36,7 +36,32 @@ function spelunk(where:string, path:Array<string>) {
     paths.push(path);
   } else {
     links.filter(link => (link.from === where))
-      .filter(link => !(path.includes(link.to) && (link.to.charAt(0) === link.to.charAt(0).toLowerCase())))
+      .filter(link => {
+        const to = link.to;
+        if (!path.includes(link.to)) {
+          return true;
+        }
+        if ((to === 'start') || (to === 'end')) {
+          return false;
+        }
+        if (link.to.charAt(0) !== link.to.charAt(0).toLowerCase()) {
+          return true;
+        }
+        if (path.filter(where => where === link.to).length !== 1) {
+          return false;
+        }
+        const counts = new Map();
+        for (const where of path) {
+          if (where.charAt(0) === where.charAt(0).toLowerCase()) {
+            counts.set(where, counts.get(where) || 0);
+            counts.set(where, counts.get(where) + 1);
+            if (counts.get(where) === 2) {
+              return false;
+            }
+          }
+        }
+        return true; 
+      })
       .forEach(link => spelunk(link.to, [ ...path, link.to ]));
   }
 }
