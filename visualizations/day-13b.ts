@@ -1,5 +1,7 @@
 import data from './day-13-data.js';
 
+const ms = 2000;
+
 interface Point {
   x:number,
   y:number,
@@ -41,28 +43,47 @@ const folds:Array<Fold> = foldsRaw.split('\n').map(s => {
 
 let maxY:number;
 let maxX:number;
+let scale;
+
+const rules = document.styleSheets[0].cssRules;
+for (let i = 0; (i < rules.length); i++) {
+  console.log(rule);
+}
 
 go();
 
 async function go() {
+  console.log('in go');
   await zoom();
 
   for (const fold of folds) {
     if (fold.axis === Axis.y) {
-      for (const point of points) {
-        if (point.y > fold.value) {
-          point.y = fold.value - (point.y - fold.value);
-          point.el.style.top = `${point.y}px`;
-        }
+      const folding = points.filter(point => point.y > fold.value);
+      for (const point of folding) {
+        point.el.style.top = `${fold.value * 100}px`;
+        point.el.style.height = '0px';
       }
+      await delay(ms);
+      for (const point of folding) {
+        point.y = fold.value - (point.y - fold.value);
+        point.el.style.top = `${point.y * 100}px`;
+        point.el.style.height = '100px';
+      }
+      await delay(ms);
       await zoom();
     } else {
-      for (const point of points) {
-        if (point.x > fold.value) {
-          point.x = fold.value - (point.x - fold.value);
-          point.el.style.left = `${point.x}px`;
-        }
+      const folding = points.filter(point => point.x > fold.value);
+      for (const point of folding) {
+        point.el.style.left = `${fold.value * 100}px`;
+        point.el.style.width = '0px';
       }
+      await delay(ms);
+      for (const point of folding) {
+        point.x = fold.value - (point.x - fold.value);
+        point.el.style.left = `${point.x * 100}px`;
+        point.el.style.width = '100px';
+      }
+      await delay(ms);
       await zoom();
     }
   }
@@ -71,19 +92,29 @@ async function go() {
 function createEl(x, y) {
   const el = document.createElement('div');
   el.classList.add('point');
-  el.style.top = `${y}px`;
-  el.style.left = `${x}px`;
+  el.style.top = `${y * 100}px`;
+  el.style.left = `${x * 100}px`;
   app.appendChild(el);
   return el;
 }
  
 async function zoom() {
+  console.log('in zoom');
   findMaxes();
   const width = document.documentElement.clientWidth;
+  const height = document.documentElement.clientHeight;
   app.style.width = `${width}px`;
-  const scale = width / (maxX + 1);
+  app.style.height = `${height}px`;
+  const scaleX = width / (100 * (maxX + 1));
+  const scaleY = height / (100 * (maxY + 1));
+  scale = Math.min(scaleX, scaleY);
   app.style.transform = `scale(${scale})`;
-  await delay(1000);
+  console.log(scale);
+  if (scale > 0.03) {
+    app.classList.remove('small');
+  } else {
+    app.classList.add('small');
+  }
 }
 
 function findMaxes() {
