@@ -44,10 +44,18 @@ const folds:Array<Fold> = foldsRaw.split('\n').map(s => {
 let maxY:number;
 let maxX:number;
 let scale;
+let pointRule;
 
 const rules = document.styleSheets[0].cssRules;
 for (let i = 0; (i < rules.length); i++) {
-  console.log(rule);
+  if (rules[i] instanceof CSSStyleRule) {
+    const cssStyleRule = rules[i] as CSSStyleRule;
+    console.log(cssStyleRule.selectorText);
+    if (cssStyleRule.selectorText === '.point') {
+      console.log('capturing');
+      pointRule = cssStyleRule;
+    }
+  }
 }
 
 go();
@@ -110,11 +118,8 @@ async function zoom() {
   scale = Math.min(scaleX, scaleY);
   app.style.transform = `scale(${scale})`;
   console.log(scale);
-  if (scale > 0.03) {
-    app.classList.remove('small');
-  } else {
-    app.classList.add('small');
-  }
+  console.log(`Point scale: ${1/scale/5}`);
+  pointRule.style.transform = `scale(${Math.max(1/scale/5, 1.0)})`;
 }
 
 function findMaxes() {
