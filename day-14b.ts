@@ -1,5 +1,3 @@
-// TOMORROW:
-//
 // For each pair (not the whole template),
 // Iterate it to depths 1 through n.
 //
