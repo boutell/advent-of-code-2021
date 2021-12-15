@@ -1,6 +1,6 @@
 import data from './day-14-data';
 
-const iterations = 20;
+const iterations = 40;
 
 interface Pair {
   a:string,
@@ -41,13 +41,18 @@ const frequencies:Map<string, number> = new Map();
 const cache:Array<LevelCache> = [];
 let char:string|null = null;
 let i = 0;
+
+const start = Date.now();
 do {
   char = next(iterations, i++);
   if (char) {
     frequencies.set(char, (frequencies.get(char) || 0) + 1);
   }
   if (!(i % 1000000)) {
-    console.log(`${i} (${(i * 100 / total)}%)`);
+    const elapsed = Date.now() - start;
+    const totalTime = (total / i) * (Date.now() - start);
+    const remaining = (totalTime - elapsed) / 1000 / 60 / 60;
+    console.log(`${i} (${(i * 100 / total)}%) time remaining: ${remaining} hours`);
   }
 } while (char !== null);
 
