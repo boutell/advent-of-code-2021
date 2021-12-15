@@ -1,16 +1,25 @@
+// TOMORROW:
+//
+// For each pair (not the whole template),
+// Iterate it to depths 1 through n.
+//
+// For a given iteration i, reuse the frequency
+// results for each pair measured in generation i-1
+// to avoid actually drilling down, and just sum them.
+//
+// Then, sum the frequencies for the pairs in the template.
+//
+// So basically, top down with memoization is correct,
+// not bottom up.
+
 import data from './day-14-data';
 
-const iterations = 40;
+const iterations = 10;
 
 interface Pair {
   a:string,
   b:string,
   yields:string
-};
-
-interface LevelCache {
-  n:number,
-  result:string|null
 };
 
 const [ templateRaw, pairsRaw ] = data.split('\n\n');
@@ -31,85 +40,49 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
   return pair;
 });
 
-let total = template.length;
-for (let i = 0; (i < iterations); i++) {
-  total = total + total - 1;
+let sum:Map<string,number> = new Map();
+for (let i = 0; (i < template.length - 1); i++) {
+  const a = template[i];
+  const b = template[i + 1];
+  const pair = pairMap.get(`${a}${b}`);
+  sum = addMaps(sum, getFrequencies(pair as Pair, iterations));
 }
-console.log(`There will be ${total} places`);
 
-const frequencies:Map<string, number> = new Map();
-const cache:Array<LevelCache> = [];
-let char:string|null = null;
-let i = 0;
+const keys = [...sum.keys()];
 
-const start = Date.now();
-do {
-  char = next(iterations, i++);
-  if (char) {
-    frequencies.set(char, (frequencies.get(char) || 0) + 1);
-  }
-  if (!(i % 1000000)) {
-    const elapsed = Date.now() - start;
-    const totalTime = (total / i) * (Date.now() - start);
-    const remaining = (totalTime - elapsed) / 1000 / 60 / 60;
-    console.log(`${i} (${(i * 100 / total)}%) time remaining: ${remaining} hours`);
-  }
-} while (char !== null);
-
-const keys = [...frequencies.keys()];
-  
-keys.sort((a, b) => (frequencies.get(b) as number) - (frequencies.get(a) as number));
-const most = frequencies.get(keys[0]) as number;
-const least = frequencies.get(keys[keys.length - 1]) as number;
+keys.sort((a, b) => (sum.get(b) as number) - (sum.get(a) as number));
+for (const key of keys) {
+  console.log(`${key} ${sum.get(key)}`);
+}
+const most = sum.get(keys[0]) as number;
+const least = sum.get(keys[keys.length - 1]) as number;
 console.log(most, least, most - least);
 
-function next(level:number, n:number):string|null {
-  const key = `${level}:${n}`;
-  if (cacheHas(level, n)) {
-    return cacheGet(level, n);
+function getFrequencies(pair:Pair, iterations:number):Map<string,number> {
+  if (iterations === 0) {
+    const result:Map<string,number> = new Map();
+    result.set(pair.a, 1);
+    result.set(pair.b, 1);
+    return result;
+  } else {
+    return addMaps(
+      getFrequencies(pairMap.get(`${pair.a}${pair.yields}`) as Pair, iterations - 1),
+      getFrequencies(pairMap.get(`${pair.yields}${pair.b}`) as Pair, iterations - 1)
+    );
   }
-  const result = nextBody();
-  cacheSet(level, n, result);
-  return result;
-  function nextBody():string|null {
-    if (n === 0) {
-      return template[0];
-    } else if (level === 0) {
-      return template[n];
+}
+
+function addMaps(a:Map<string,number>, b:Map<string,number>) {
+  const result:Map<string,number> = new Map();
+  for (const key of a.keys()) {
+    result.set(key, a.get(key) as number);
+  }
+  for (const key of b.keys()) {
+    if (!result.has(key)) {
+      result.set(key, b.get(key) as number);
     } else {
-      if (!(n & 1)) {
-        return next(level - 1, (n >> 1));
-      } else {
-        const a = next(level - 1, (n >> 1));
-        const b = next(level - 1, (n >> 1) + 1);
-        if (!(a && b)) {
-          return null;
-        }
-        const key = `${a}${b}`;
-        if (!pairMap.get(key)) {
-          throw new Error(`Invalid key: ${key}`);
-        }
-        return (pairMap.get(key) as Pair).yields;
-      }
+      result.set(key, (result.get(key) as number) + (b.get(key) as number));
     }
   }
-}
-
-function cacheSet(level:number, n:number, result:string|null):void {
-  cache[level] = {
-    n,
-    result
-  };
-}
-
-function cacheGet(level:number, n:number):string|null {
-  if (cacheHas(level, n)) {
-    return cache[level].result;
-  } else {
-    throw new Error(`Cache should contain: ${level} ${n}`);
-  }
-}
-
-function cacheHas(level:number, n:number):boolean {
-  return cache[level] && cache[level].n === n;
+  return result;
 }
