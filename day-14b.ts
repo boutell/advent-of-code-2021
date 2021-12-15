@@ -41,6 +41,11 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
 });
 
 let sum:Map<string,number> = new Map();
+
+for (let i = 0; (i < template.length); i++) {
+  sum = addMaps(sum, getMapOfOne(template[i]));
+}
+
 for (let i = 0; (i < template.length - 1); i++) {
   const a = template[i];
   const b = template[i + 1];
@@ -59,30 +64,33 @@ const least = sum.get(keys[keys.length - 1]) as number;
 console.log(most, least, most - least);
 
 function getFrequencies(pair:Pair, iterations:number):Map<string,number> {
-  if (iterations === 0) {
-    const result:Map<string,number> = new Map();
-    result.set(pair.a, 1);
-    result.set(pair.b, 1);
-    return result;
+  if (iterations === 1) {
+    return getMapOfOne(pair.yields);
   } else {
     return addMaps(
       getFrequencies(pairMap.get(`${pair.a}${pair.yields}`) as Pair, iterations - 1),
+      getFrequencies(pair, 1),
       getFrequencies(pairMap.get(`${pair.yields}${pair.b}`) as Pair, iterations - 1)
     );
   }
 }
 
-function addMaps(a:Map<string,number>, b:Map<string,number>) {
+function addMaps(...maps:Array<Map<string,number>>) {
   const result:Map<string,number> = new Map();
-  for (const key of a.keys()) {
-    result.set(key, a.get(key) as number);
-  }
-  for (const key of b.keys()) {
-    if (!result.has(key)) {
-      result.set(key, b.get(key) as number);
-    } else {
-      result.set(key, (result.get(key) as number) + (b.get(key) as number));
+  for (const map of maps) {
+    for (const key of map.keys()) {
+      if (!result.has(key)) {
+        result.set(key, map.get(key) as number);
+      } else {
+        result.set(key, (result.get(key) as number) + (map.get(key) as number));
+      }
     }
   }
+  return result;
+}
+
+function getMapOfOne(char:string):Map<string,number> {
+  const result:Map<string,number> = new Map();
+  result.set(char, 1);
   return result;
 }
