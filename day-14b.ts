@@ -24,33 +24,45 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
   return pair;
 });
 
-let polymer = [...template];
+const frequencies:Map<string, number> = new Map();
 
-for (let i = 1; (i <= 40); i++) {
-  const next = [];
-  let first = true;
-  for (let j = 0; (j < (polymer.length - 1)); j++) {
-    const pair = pairMap.get(`${polymer[i]}${polymer[i + 1]}`);
-    if (!pair) {
-      throw new Error(`No match found for: ${polymer[j]}${polymer[j+1]}`);
-    }
-    if (first) {
-      next.push(pair.a);
-      first = false;
-    }
-    next.push(pair.yields);
-    next.push(pair.b);
+let char:string|null = null;
+let i = 0;
+let result = '';
+do {
+  char = next(40, i++);
+  if (char) {
+    frequencies.set(char, (frequencies.get(char) || 0) + 1);
+    result += char;
   }
-  polymer = next;
-  const frequencies:Map<string, number> = new Map();
-  for (const value of polymer) {
-    frequencies.set(value, (frequencies.get(value) || 0) + 1);
+} while (char !== null);
+
+const keys = [...frequencies.keys()];
+  
+keys.sort((a, b) => (frequencies.get(b) as number) - (frequencies.get(a) as number));
+const most = frequencies.get(keys[0]) as number;
+const least = frequencies.get(keys[keys.length - 1]) as number;
+console.log(most, least, most - least);
+
+function next(level:number, n:number):string|null {
+  if (n === 0) {
+    return template[0];
+  } else if (level === 0) {
+    return template[n];
+  } else {
+    if (!(n & 1)) {
+      return next(level - 1, (n >> 1));
+    } else {
+      const a = next(level - 1, (n >> 1));
+      const b = next(level - 1, (n >> 1) + 1);
+      if (!(a && b)) {
+        return null;
+      }
+      const key = `${a}${b}`;
+      if (!pairMap.get(key)) {
+        throw new Error(`Invalid key: ${key}`);
+      }
+      return (pairMap.get(key) as Pair).yields;
+    }
   }
-  const keys = [...frequencies.keys()];
-  
-  keys.sort((a, b) => (frequencies.get(b) as number) - (frequencies.get(a) as number));
-  const most = frequencies.get(keys[0]) as number;
-  const least = frequencies.get(keys[keys.length - 1]) as number;
-  console.log(polymer.length, most, least, most - least);
-  
 }
