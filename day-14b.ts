@@ -14,13 +14,15 @@
 
 import data from './day-14-data';
 
-const iterations = 10;
+const iterations = 40;
 
 interface Pair {
   a:string,
   b:string,
   yields:string
 };
+
+type Frequencies = Map<string,number>;
 
 const [ templateRaw, pairsRaw ] = data.split('\n\n');
 
@@ -40,7 +42,8 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
   return pair;
 });
 
-let sum:Map<string,number> = new Map();
+let sum:Frequencies = new Map();
+const memos:Map<string,Frequencies> = new Map();
 
 for (let i = 0; (i < template.length); i++) {
   sum = addMaps(sum, getMapOfOne(template[i]));
@@ -63,20 +66,29 @@ const most = sum.get(keys[0]) as number;
 const least = sum.get(keys[keys.length - 1]) as number;
 console.log(most, least, most - least);
 
-function getFrequencies(pair:Pair, iterations:number):Map<string,number> {
-  if (iterations === 1) {
-    return getMapOfOne(pair.yields);
-  } else {
-    return addMaps(
-      getFrequencies(pairMap.get(`${pair.a}${pair.yields}`) as Pair, iterations - 1),
-      getFrequencies(pair, 1),
-      getFrequencies(pairMap.get(`${pair.yields}${pair.b}`) as Pair, iterations - 1)
-    );
+function getFrequencies(pair:Pair, iterations:number):Frequencies {
+  const memoKey = JSON.stringify({ pair, iterations });
+  if (memos.has(memoKey)) {
+    return memos.get(memoKey) as Frequencies;
+  }
+  const result = getFrequenciesBody();
+  memos.set(memoKey, result);
+  return result;
+  function getFrequenciesBody() {
+    if (iterations === 1) {
+      return getMapOfOne(pair.yields);
+    } else {
+      return addMaps(
+        getFrequencies(pairMap.get(`${pair.a}${pair.yields}`) as Pair, iterations - 1),
+        getFrequencies(pair, 1),
+        getFrequencies(pairMap.get(`${pair.yields}${pair.b}`) as Pair, iterations - 1)
+      );
+    }
   }
 }
 
-function addMaps(...maps:Array<Map<string,number>>) {
-  const result:Map<string,number> = new Map();
+function addMaps(...maps:Array<Frequencies>) {
+  const result:Frequencies = new Map();
   for (const map of maps) {
     for (const key of map.keys()) {
       if (!result.has(key)) {
@@ -89,8 +101,8 @@ function addMaps(...maps:Array<Map<string,number>>) {
   return result;
 }
 
-function getMapOfOne(char:string):Map<string,number> {
-  const result:Map<string,number> = new Map();
+function getMapOfOne(char:string):Frequencies {
+  const result:Frequencies = new Map();
   result.set(char, 1);
   return result;
 }
