@@ -24,16 +24,18 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
   return pair;
 });
 
+const memoLevel = 20;
 const frequencies:Map<string, number> = new Map();
-
+const memo:Map<string, string|null> = new Map();
 let char:string|null = null;
 let i = 0;
-let result = '';
 do {
   char = next(40, i++);
   if (char) {
     frequencies.set(char, (frequencies.get(char) || 0) + 1);
-    result += char;
+  }
+  if (!(i % 100000)) {
+    console.log(i);
   }
 } while (char !== null);
 
@@ -45,24 +47,37 @@ const least = frequencies.get(keys[keys.length - 1]) as number;
 console.log(most, least, most - least);
 
 function next(level:number, n:number):string|null {
-  if (n === 0) {
-    return template[0];
-  } else if (level === 0) {
-    return template[n];
-  } else {
-    if (!(n & 1)) {
-      return next(level - 1, (n >> 1));
+  const key = `${level}:${n}`;
+  if (n <= memoLevel) {
+    if (memo.has(key)) {
+      return memo.get(key) as string|null;
+    }
+  }
+  const result = nextBody();
+  if (n <= memoLevel) {
+    memo.set(key, result);
+  }
+  return result;
+  function nextBody():string|null {
+    if (n === 0) {
+      return template[0];
+    } else if (level === 0) {
+      return template[n];
     } else {
-      const a = next(level - 1, (n >> 1));
-      const b = next(level - 1, (n >> 1) + 1);
-      if (!(a && b)) {
-        return null;
+      if (!(n & 1)) {
+        return next(level - 1, (n >> 1));
+      } else {
+        const a = next(level - 1, (n >> 1));
+        const b = next(level - 1, (n >> 1) + 1);
+        if (!(a && b)) {
+          return null;
+        }
+        const key = `${a}${b}`;
+        if (!pairMap.get(key)) {
+          throw new Error(`Invalid key: ${key}`);
+        }
+        return (pairMap.get(key) as Pair).yields;
       }
-      const key = `${a}${b}`;
-      if (!pairMap.get(key)) {
-        throw new Error(`Invalid key: ${key}`);
-      }
-      return (pairMap.get(key) as Pair).yields;
     }
   }
 }
