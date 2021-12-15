@@ -1,9 +1,16 @@
 import data from './day-14-data';
 
+const iterations = 20;
+
 interface Pair {
   a:string,
   b:string,
   yields:string
+};
+
+interface LevelCache {
+  n:number,
+  result:string|null
 };
 
 const [ templateRaw, pairsRaw ] = data.split('\n\n');
@@ -24,18 +31,23 @@ const pairs:Array<Pair> = pairsRaw.split('\n').map(pairRaw => {
   return pair;
 });
 
-const memoLevel = 20;
+let total = template.length;
+for (let i = 0; (i < iterations); i++) {
+  total = total + total - 1;
+}
+console.log(`There will be ${total} places`);
+
 const frequencies:Map<string, number> = new Map();
-const memo:Map<string, string|null> = new Map();
+const cache:Array<LevelCache> = [];
 let char:string|null = null;
 let i = 0;
 do {
-  char = next(40, i++);
+  char = next(iterations, i++);
   if (char) {
     frequencies.set(char, (frequencies.get(char) || 0) + 1);
   }
-  if (!(i % 100000)) {
-    console.log(i);
+  if (!(i % 1000000)) {
+    console.log(`${i} (${(i * 100 / total)}%)`);
   }
 } while (char !== null);
 
@@ -48,15 +60,11 @@ console.log(most, least, most - least);
 
 function next(level:number, n:number):string|null {
   const key = `${level}:${n}`;
-  if (n <= memoLevel) {
-    if (memo.has(key)) {
-      return memo.get(key) as string|null;
-    }
+  if (cacheHas(level, n)) {
+    return cacheGet(level, n);
   }
   const result = nextBody();
-  if (n <= memoLevel) {
-    memo.set(key, result);
-  }
+  cacheSet(level, n, result);
   return result;
   function nextBody():string|null {
     if (n === 0) {
@@ -80,4 +88,23 @@ function next(level:number, n:number):string|null {
       }
     }
   }
+}
+
+function cacheSet(level:number, n:number, result:string|null):void {
+  cache[level] = {
+    n,
+    result
+  };
+}
+
+function cacheGet(level:number, n:number):string|null {
+  if (cacheHas(level, n)) {
+    return cache[level].result;
+  } else {
+    throw new Error(`Cache should contain: ${level} ${n}`);
+  }
+}
+
+function cacheHas(level:number, n:number):boolean {
+  return cache[level] && cache[level].n === n;
 }
