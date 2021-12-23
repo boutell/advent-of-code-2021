@@ -91,9 +91,18 @@ function dijkstra(graph:Array<Edge>, source:string) {
   const distance:Map<string, number> = new Map();
   const distanceSets:AVLTree<number,Set<string>> = new AVLTree();
   const previous:Map<string, string|null> = new Map();
+  const edgesByOrigin:Map<string, Array<Edge>> = new Map();
   for (const edge of graph) {
     add(edge.a);
     add(edge.b);
+
+    if (!edgesByOrigin.has(edge.a)) {
+      edgesByOrigin.set(edge.a, [ edge ]);
+    } else {
+      const list:Array<Edge> = edgesByOrigin.get(edge.a)!;
+      list.push(edge);
+    }
+
     function add(name:string) {
       vertexes.add(name);
       setDistance(name, Infinity);
@@ -103,25 +112,17 @@ function dijkstra(graph:Array<Edge>, source:string) {
   console.log('getting started');
   setDistance(source, 0);
   const initialSize = vertexes.size;
-  const start = Date.now();
   while (vertexes.size > 0) {
-    if (!(vertexes.size % 100)) {
-      const now = Date.now();
-      const proportion = (initialSize - vertexes.size) / initialSize;
-      console.log(`${((now - start) / proportion) / 1000 / 60}`);
-    }
     let least = getLeast();
     vertexes.delete(least);
     deleteDistance(least);
-    for (const edge of graph) {
-      if (edge.a === least) {
-        if (vertexes.has(edge.b)) {
-          const alt = getDistance(least)! + edge.cost;
-          const bDist = getDistance(edge.b)!;
-          if (alt < bDist) {
-            setDistance(edge.b, alt);
-            previous.set(edge.b, least);
-          }
+    for (const edge of edgesByOrigin.get(least)!) {
+      if (vertexes.has(edge.b)) {
+        const alt = getDistance(least)! + edge.cost;
+        const bDist = getDistance(edge.b)!;
+        if (alt < bDist) {
+          setDistance(edge.b, alt);
+          previous.set(edge.b, least);
         }
       }
     }
@@ -167,6 +168,8 @@ function dijkstra(graph:Array<Edge>, source:string) {
   }
 }
 
+// From Wikipedia:
+//
 // function Dijkstra(Graph, source):
 //  2
 //  3      create vertex set Q
