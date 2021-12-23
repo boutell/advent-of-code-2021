@@ -32,6 +32,11 @@ interface Edge {
   cost:number
 };
 
+interface Element {
+  name:string,
+  next:Element|null
+};
+
 const graph:Array<Edge> = [];
 for (let y = 0; (y < map.length); y++) {
   for (let x = 0; (x < map[0].length); x++) {
@@ -83,17 +88,20 @@ function printPath(distance:Map<string,number>, previous:Map<string, string|null
 function dijkstra(graph:Array<Edge>, source:string) {
   const vertexes:Set<string> = new Set();
   const distance:Map<string, number> = new Map();
+  let leastElement:Element|null = null;
   const previous:Map<string, string|null> = new Map();
+  console.log(graph.length);
   for (const edge of graph) {
     add(edge.a);
     add(edge.b);
     function add(name:string) {
       vertexes.add(name);
-      distance.set(name, Infinity);
+      setDistance(name, Infinity);
       previous.set(name, null);
     }
   }
-  distance.set(source, 0);
+  console.log('getting started');
+  setDistance(source, 0);
   const initialSize = vertexes.size;
   const start = Date.now();
   while (vertexes.size > 0) {
@@ -102,20 +110,16 @@ function dijkstra(graph:Array<Edge>, source:string) {
       const proportion = (initialSize - vertexes.size) / initialSize;
       console.log(`${((now - start) / proportion) / 1000 / 60}`);
     }
-    let least:string|null = null;
-    for (const name of vertexes) {
-      if ((least === null) || (distance.get(name)! < distance.get(least)!)) {
-        least = name;
-      }
-    }
-    vertexes.delete(least!);
+    let least = getLeast();
+    vertexes.delete(least);
+    deleteDistance(least);
     for (const edge of graph) {
       if (edge.a === least) {
         if (vertexes.has(edge.b)) {
-          const alt = distance.get(least)! + edge.cost;
-          const bDist = distance.get(edge.b)!;
+          const alt = getDistance(least)! + edge.cost;
+          const bDist = getDistance(edge.b)!;
           if (alt < bDist) {
-            distance.set(edge.b, alt);
+            setDistance(edge.b, alt);
             previous.set(edge.b, least);
           }
         }
@@ -126,6 +130,82 @@ function dijkstra(graph:Array<Edge>, source:string) {
     previous,
     distance
   };
+
+  function setDistance(name:string, v:number) {
+    if (distance.has(name)) {
+      if (distance.get(name) === v) {
+        return;
+      } else {
+        deleteDistance(name);
+      }
+    }
+    if (!leastElement) {
+      leastElement = {
+        name,
+        next: null
+      };
+    } else {
+      let previousElement = null;
+      let nextElement = leastElement;
+      while (true) {
+        if (getDistance(nextElement.name) >= v) {
+          const element = {
+            name,
+            next: nextElement
+          };
+          if (previousElement) {
+            previousElement.next = element;
+          } else {
+            leastElement = {
+              name,
+              next: element
+            };
+          }
+          break;
+        }
+        previousElement = nextElement;
+        if (!nextElement.next) {
+          nextElement.next = {
+            name,
+            next: null
+          };
+          break;
+        } else {
+          nextElement = nextElement.next;
+        }
+      }
+    }
+    distance.set(name, v);
+  }
+  function getDistance(name:string):number {
+    return distance.get(name)!;
+  }
+  function getLeast():string {
+    return leastElement!.name;
+  }
+  function deleteDistance(name:string) {
+    if (!leastElement) {
+      throw new Error(`distance map has ${name} but there is no leastElement`);
+    }
+    let previousElement = null;
+    let nextElement = leastElement;
+    while (true) {
+      if (nextElement.name === name) {
+        if (previousElement) {
+          previousElement.next = nextElement.next;
+        } else {
+          leastElement = nextElement.next;
+        }
+        break;
+      }
+      previousElement = nextElement;
+      if (!nextElement.next) {
+        throw new Error(`distance map has ${name} but linked list does not`);
+      } else {
+        nextElement = nextElement.next;
+      }
+    }
+  }
 }
 
 // function Dijkstra(Graph, source):
