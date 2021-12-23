@@ -32,42 +32,38 @@ interface Edge {
   cost:number
 };
 
-const graph:Map<string,Edge> = new Map();
+const graph:Array<Edge> = [];
 for (let y = 0; (y < map.length); y++) {
   for (let x = 0; (x < map[0].length); x++) {
     if (y > 0) {
-      addEdge({
+      graph.push({
         a: `${x},${y}`,
         b: `${x},${y-1}`,
         cost: map[y-1][x]
       });
     }
     if (x > 0) {
-      addEdge({
+      graph.push({
         a: `${x},${y}`,
         b: `${x-1},${y}`,
         cost: map[y][x-1]
       });
     }
     if (y < (map.length - 1)) {
-      addEdge({
+      graph.push({
         a: `${x},${y}`,
         b: `${x},${y+1}`,
         cost: map[y+1][x]
       });
     }
     if (x < (map[0].length - 1)) {
-      addEdge({
+      graph.push({
         a: `${x},${y}`,
         b: `${x+1},${y}`,
         cost: map[y][x+1]
       });      
     }
   }
-}
-
-function addEdge(edge:Edge) {
-  graph.set(`${edge.a}:${edge.b}`, edge);
 }
 
 const { distance, previous } = dijkstra(graph, '0,0');
@@ -78,7 +74,7 @@ function printPath(distance:Map<string,number>, previous:Map<string, string|null
   do {
     console.log(destination);
     const a = previous.get(destination)!;
-    cost += graph.get(`${a}:${destination}`)!.cost;
+    cost += graph.find(edge => edge.a === a && edge.b === destination)!.cost;
     destination = a;
   } while (destination !== source);
   console.log(`Cost: ${cost}`);
@@ -98,13 +94,13 @@ function dijkstra(graph:Array<Edge>, source:string) {
     }
   }
   distance.set(source, 0);
-  const start = Date.now();
   const initialSize = vertexes.size;
+  const start = Date.now();
   while (vertexes.size > 0) {
     if (!(vertexes.size % 100)) {
       const now = Date.now();
       const proportion = (initialSize - vertexes.size) / initialSize;
-      console.log(((now - start) / proportion) / 1000 / 60);
+      console.log(`${((now - start) / proportion) / 1000 / 60}`);
     }
     let least:string|null = null;
     for (const name of vertexes) {
