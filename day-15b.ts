@@ -1,4 +1,5 @@
 import { readFileSync as read } from 'fs';
+import AVLTree from 'avl';
 
 const map:Array<Array<number>> = read('day-15.txt', { encoding: 'utf8' })
   .split('\n')
@@ -88,9 +89,8 @@ function printPath(distance:Map<string,number>, previous:Map<string, string|null
 function dijkstra(graph:Array<Edge>, source:string) {
   const vertexes:Set<string> = new Set();
   const distance:Map<string, number> = new Map();
-  let leastElement:Element|null = null;
+  const distanceSets:AVLTree<number,Set<string>> = new AVLTree();
   const previous:Map<string, string|null> = new Map();
-  console.log(graph.length);
   for (const edge of graph) {
     add(edge.a);
     add(edge.b);
@@ -139,41 +139,12 @@ function dijkstra(graph:Array<Edge>, source:string) {
         deleteDistance(name);
       }
     }
-    if (!leastElement) {
-      leastElement = {
-        name,
-        next: null
-      };
+    const node = distanceSets.find(v);
+    const set = node && node.data;
+    if (!set) {
+      distanceSets.insert(v, new Set([ name ]));
     } else {
-      let previousElement = null;
-      let nextElement = leastElement;
-      while (true) {
-        if (getDistance(nextElement.name) >= v) {
-          const element = {
-            name,
-            next: nextElement
-          };
-          if (previousElement) {
-            previousElement.next = element;
-          } else {
-            leastElement = {
-              name,
-              next: element
-            };
-          }
-          break;
-        }
-        previousElement = nextElement;
-        if (!nextElement.next) {
-          nextElement.next = {
-            name,
-            next: null
-          };
-          break;
-        } else {
-          nextElement = nextElement.next;
-        }
-      }
+      set.add(name);
     }
     distance.set(name, v);
   }
@@ -181,29 +152,17 @@ function dijkstra(graph:Array<Edge>, source:string) {
     return distance.get(name)!;
   }
   function getLeast():string {
-    return leastElement!.name;
+    const node = distanceSets.minNode();
+    const set:Set<string> = node!.data as Set<string>;
+    const [ first ] = set;
+    return first;
   }
   function deleteDistance(name:string) {
-    if (!leastElement) {
-      throw new Error(`distance map has ${name} but there is no leastElement`);
-    }
-    let previousElement = null;
-    let nextElement = leastElement;
-    while (true) {
-      if (nextElement.name === name) {
-        if (previousElement) {
-          previousElement.next = nextElement.next;
-        } else {
-          leastElement = nextElement.next;
-        }
-        break;
-      }
-      previousElement = nextElement;
-      if (!nextElement.next) {
-        throw new Error(`distance map has ${name} but linked list does not`);
-      } else {
-        nextElement = nextElement.next;
-      }
+    const d = distance.get(name)!;
+    const set:Set<string> = distanceSets.find(d)!.data!;
+    set.delete(name);
+    if (!set.size) {
+      distanceSets.remove(d);
     }
   }
 }
