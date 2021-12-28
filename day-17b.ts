@@ -47,4 +47,4 @@ for (let ivy = -max; (ivy < max); ivy++) {
   }
 }
 
-console.log(highest);
+console.log(winners);
