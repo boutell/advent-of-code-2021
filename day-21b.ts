@@ -23,7 +23,7 @@ const memos = new Map();
 
 let ends = 0;
 
-console.log(countGames(0, 0, 4, 0, 8, 0));
+console.log(countGames(0, 0, 7, 0, 4, 0));
 
 function countGames(rolls:number, rollAccumulator:number, p1:number, p1Score:number, p2:number, p2Score:number):Array<number> {
   let key;
@@ -33,7 +33,7 @@ function countGames(rolls:number, rollAccumulator:number, p1:number, p1Score:num
       return memos.get(key);
     }
   }
-  if (!(rolls % 6)) {
+  if (!((rolls - 3) % 6)) {
     p1 += rollAccumulator;
     p1 %= 10;
     if (p1 === 0) {
@@ -51,7 +51,7 @@ function countGames(rolls:number, rollAccumulator:number, p1:number, p1Score:num
       return results;
     }
     rollAccumulator = 0;
-  } else if (!((rolls - 3) % 6)) {
+  } else if ((rolls > 0) && (!(rolls % 6))) {
     p2 += rollAccumulator;
     p2 %= 10;
     if (p2 === 0) {
