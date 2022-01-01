@@ -19,62 +19,52 @@
 //
 // So simulate 1 player games and see what you can do with that data.
 
-let p1Wins = 0;
-let p2Wins = 0;
+const memos = new Map();
 
-const played = new Set();
+let ends = 0;
 
-console.log(Math.pow(3, 18));
-for (let i = 0; (i < Math.pow(3, 18)); i++) {
-  if (!(i % 1000000)) {
-    console.log(p1Wins, p2Wins);
+console.log(countGames(0, 0, 4, 0));
+
+function countGames(rolls:number, rollAccumulator:number, position:number, score:number):Map<string,number> {
+  let key;
+  if (rolls > 15) {
+    key = `${rolls}:${rollAccumulator}:${position}:${score}`;
+    if (memos.has(key)) {
+      return memos.get(key);
+    }
   }
-  let p1Score = 0;
-  let p2Score = 0;
-  let used = '';
-  let turns = 0;
-  let dice = i.toString(3).padStart(30, '0');
-  while (true) {
-    let p1 = 4;
-    let p2 = 8;
-    turns++;
-    p1 += roll() + roll() + roll();
-    if (played.has(used)) {
-      break;
-    }
-    while (p1 > 10) {
-      p1 -= 10;
-    }
-    p1Score += p1;
-    if (p1Score >= 21) {
-      p1Wins++;
-      played.add(used);
-      break;
-    }
-    turns++;
-    p2 += roll() + roll() + roll();
-    if (played.has(used)) {
-      break;
-    }
-    while (p2 > 10) {
-      p2 -= 10;
-    }
-    p2Score += p2;
-    if (p2Score >= 21) {
-      p2Wins++;
-      played.add(used);
-      break;
-    }
-    function roll() {
-      used += dice[0];
-      const result = parseInt(dice[0]) + 1;
-      dice = dice.substring(1, dice.length);
-      if (!dice.length) {
-        throw new Error(`Ran out of dice in game ${i.toString(3)}`);
+  const results = new Map();
+  if (!(rolls % 3)) {
+    if (rolls > 0) {
+      position = position + rollAccumulator;
+      position %= 10;
+      if (position === 0) {
+        score += 10;
+      } else {
+        score += position;
       }
-      return result;
+      if (score >= 21) {
+        ends++;
+        if (!(ends % 1000000)) {
+          console.log(ends);
+        }
+        results.set(rolls, 1);
+        memos.set(key, results);
+        return results;
+      }
     }
   }
+  for (let roll = 1; (roll <= 3); roll++) {
+    const rollResults = countGames(rolls + 1, rollAccumulator + roll, position, score);
+    for (const [ key, val ] of rollResults.entries()) {
+      if (!results.has(key)) {
+        results.set(key, 0);
+      }
+      results.set(key, results.get(key) + val);
+    }
+  }
+  if (rolls > 15) {
+    memos.set(key, results);
+  }
+  return results;
 }
-
-console.log(p1Wins, p2Wins);
