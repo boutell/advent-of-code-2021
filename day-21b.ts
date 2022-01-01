@@ -23,45 +23,58 @@ const memos = new Map();
 
 let ends = 0;
 
-console.log(countGames(0, 0, 4, 0));
+console.log(countGames(0, 0, 4, 0, 8, 0));
 
-function countGames(rolls:number, rollAccumulator:number, position:number, score:number):Map<string,number> {
+function countGames(rolls:number, rollAccumulator:number, p1:number, p1Score:number, p2:number, p2Score:number):Array<number> {
   let key;
   if (rolls > 15) {
-    key = `${rolls}:${rollAccumulator}:${position}:${score}`;
+    key = `${rolls}:${rollAccumulator}:${p1}:${p1Score}:${p2}:${p2Score}`;
     if (memos.has(key)) {
       return memos.get(key);
     }
   }
-  const results = new Map();
-  if (!(rolls % 3)) {
-    if (rolls > 0) {
-      position = position + rollAccumulator;
-      position %= 10;
-      if (position === 0) {
-        score += 10;
-      } else {
-        score += position;
-      }
-      if (score >= 21) {
-        ends++;
-        if (!(ends % 1000000)) {
-          console.log(ends);
-        }
-        results.set(rolls, 1);
-        memos.set(key, results);
-        return results;
-      }
+  if (!(rolls % 6)) {
+    p1 += rollAccumulator;
+    p1 %= 10;
+    if (p1 === 0) {
+      p1Score += 10;
+    } else {
+      p1Score += p1;
     }
+    if (p1Score >= 21) {
+      ends++;
+      if (!(ends % 1000000)) {
+        console.log(ends);
+      }
+      const results = [ 1, 0 ];
+      memos.set(key, results);
+      return results;
+    }
+    rollAccumulator = 0;
+  } else if (!((rolls - 3) % 6)) {
+    p2 += rollAccumulator;
+    p2 %= 10;
+    if (p2 === 0) {
+      p2Score += 10;
+    } else {
+      p2Score += p2;
+    }
+    if (p2Score >= 21) {
+      ends++;
+      if (!(ends % 1000000)) {
+        console.log(ends);
+      }
+      const results = [ 0, 1 ];
+      memos.set(key, results);
+      return results;
+    }
+    rollAccumulator = 0;
   }
+  const results = [ 0, 0 ];
   for (let roll = 1; (roll <= 3); roll++) {
-    const rollResults = countGames(rolls + 1, rollAccumulator + roll, position, score);
-    for (const [ key, val ] of rollResults.entries()) {
-      if (!results.has(key)) {
-        results.set(key, 0);
-      }
-      results.set(key, results.get(key) + val);
-    }
+    const rollResults = countGames(rolls + 1, rollAccumulator + roll, p1, p1Score, p2, p2Score);
+    results[0] += rollResults[0];
+    results[1] += rollResults[1];
   }
   if (rolls > 15) {
     memos.set(key, results);
